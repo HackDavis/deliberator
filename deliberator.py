@@ -2,6 +2,14 @@ import sys
 import re
 from prospect import Prospect
 
+refer = ['Miran Solanki', 'Lawrence Wong', 'Carlos Vasquez', 'Sean Kim', 
+        'Zachary Petzinger', 'Jeffrey Tai', 'Samuel Bekker', 
+        'Hiroka Tamura', 'Debparna Pratiher', 'Karthik Bharathala', 'Srinath Goli', 'Carlo Cruz-Albrecht', 'Jennifer Kim',
+        'Shashank Guduru', 'Clarice Wong', 'Clarice Wong', 'David Chang', 'Miguel Acevedo',
+        'Anushka Singh', 'Christian Fahrney', 'Disha Bendre', 'Anny Hsu', 'Brandon Luong', 
+        'Donald Pickney', 'Stephanie Chang', 'Rachel Lee', 'Alex Fu', 'David Lin', 'Joanne Wang', 'Pooja Rajkumar',
+        'Mary Serafin', 'Karissa Tom', 'Sanil Gupta', 'Vishan Menon', 'Vishaal Prasad', 'Kushal Cuttari']
+
 #p = Prospect('name', 'davis', 10)
 #p.to_string()
 def process_prospect(p):
@@ -70,23 +78,68 @@ def deliberate(prospect_list, total):
     num_senior = 0
     num_davis = 0
 
-    for per in prospect_list:
+    #for per in prospect_list:
+    #for i in range(0, len(prospect_list)):
+    i = 0
+    while i < len(prospect_list):
+        per = prospect_list[i]
         display_person(per)
         display_total(accept, reject, waitlist, num_female, num_male, num_other_gender, num_fresh, num_soph, num_junior, num_senior, num_davis, count, total)
         count = count + 1
 
-        result = input("Accept, Waitlist, or Reject? (A or W or R): ")
+        result = ''
+
+        if per.first + ' ' + per.last in refer:
+            result = 'a'
+        else:
+            result = input("Accept, Waitlist, or Reject? (A or W or R): ")
+
         if result.lower() == 'q':
-            sys.exit(0)
+            return(accept)
         if result.lower() == 'b': 
-            i = max(i - 2, 0)
             # alter stats; not currently functional
+            if i == 0:
+                count = count - 1
+                continue
+            prev = prospect_list[max(i - 1, 0)]
+            # update gender
+            if prev.gender == 'female':
+                num_female = num_female - 1
+            elif prev.gender == 'male':
+                num_male = num_male - 1
+            else:
+                num_other_gender = num_other_gender - 1
+
+            # update year
+            if prev.year == 1:
+                num_fresh = num_fresh - 1
+            elif prev.year == 2:
+                num_soph = num_soph - 1
+            elif prev.year == 3:
+                num_junior = num_junior - 1
+            else:
+                num_senior = num_senior - 1
+
+            # update davis
+            if 'davis' in prev.uni:
+                num_davis = num_davis - 1
+
+            if accept and accept[-1].first == prev.first and accept[-1].last == prev.last:
+                accept.pop()
+            if reject and reject[-1].first == prev.first and reject[-1].last == prev.last:
+                reject.pop()
+            if waitlist and waitlist[-1].first == prev.first and waitlist[-1].last == prev.last:
+                waitlist.pop()
+
+            count = count - 2
+
+            i = max(i - 1, 0)
             continue
+
         if result.lower() == 'a':
             accept.append(per)
 
             # update gender
-            print('per gender here: ' + per.gender)
             if per.gender == 'female':
                 num_female = num_female + 1
             elif per.gender == 'male':
@@ -105,7 +158,7 @@ def deliberate(prospect_list, total):
                 num_senior = num_senior + 1
 
             # update davis
-            if 'davis' in per.uni:
+            if 'davis' in per.uni.lower():
                 num_davis = num_davis + 1
 
             # modify stats
@@ -113,17 +166,23 @@ def deliberate(prospect_list, total):
             waitlist.append(per)
         else:
             reject.append(per)
+
+        i = i + 1
+
     return(accept)
 
 def process_data():
     prospect_list = []
     total = 0
 
+    # read in file
     with open('report.csv') as txt:
+        # parse file
         applicants = txt.readlines()
 
         total = len(applicants) - 1
 
+        # add each person
         for person in applicants[1:]:
             per = process_prospect(person)
             prospect_list.append(per)
@@ -131,10 +190,13 @@ def process_data():
     accepted = deliberate(prospect_list, total)
 
 
-    # read in file
-    # parse file
-    # add each person
     return(accepted)
 
+def finish(result):
+    with open('output.txt', 'w') as out:
+        for person in result:
+            out.write(person.first + ' ' + person.last + '\n')
+
 if __name__ == '__main__':
-    process_data()
+    result = process_data()
+    finish(result)
