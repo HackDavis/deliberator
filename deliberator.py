@@ -1,6 +1,16 @@
 import sys
+import webbrowser
 import re
 from prospect import Prospect
+
+# MacOS
+chrome_path = 'open -a /Applications/Google\ Chrome.app %s'
+
+# Windows
+# chrome_path = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s'
+
+# Linux
+# chrome_path = '/usr/bin/google-chrome %s'
 
 refer = ['Miran Solanki', 'Lawrence Wong', 'Carlos Vasquez', 'Sean Kim', 
         'Zachary Petzinger', 'Jeffrey Tai', 'Samuel Bekker', 
@@ -32,7 +42,7 @@ def process_prospect(p):
     #print('gender:'+ p[7])
 
     # make new person
-    per = Prospect(p[1], p[2], p[3], p[4][1:-1], p[5][1:-1], p[6], p[7].lower(), p[8], p[9], p[10], p[11][1:-1], p[12], p[21], p[22], p[23])
+    per = Prospect(p[1], p[2], p[3], p[4][1:-1], p[5][1:-1], p[6], p[7].lower(), p[8], p[9], p[10], p[11][1:-1], p[12], p[21], p[22], p[23], p[20])
     return(per)
 
 def display_person(per):
@@ -51,6 +61,9 @@ def display_person(per):
     print('github:\t\t' + per.github)
     print('linkedin:\t' + per.linkedin)
     print('website:\t' + per.site)
+    print('resume:\t' + per.resume)
+    if per.resume != '':
+        webbrowser.get(chrome_path).open(per.resume)
 
 
 def display_total(accept, reject, waitlist, num_female, num_male, num_other_gender, num_fresh,
@@ -83,21 +96,22 @@ def deliberate(prospect_list, total):
     i = 0
     while i < len(prospect_list):
         per = prospect_list[i]
-        display_person(per)
-        display_total(accept, reject, waitlist, num_female, num_male, num_other_gender, num_fresh, num_soph, num_junior, num_senior, num_davis, count, total)
-        count = count + 1
-
         result = ''
 
-        if per.first + ' ' + per.last in refer:
+        if per.first + ' ' + per.last in refer or per.gender == 'female':
             result = 'a'
         else:
+            display_person(per)
+            display_total(accept, reject, waitlist, num_female, num_male, num_other_gender, num_fresh, num_soph, num_junior, num_senior, num_davis, count, total)
             result = input("Accept, Waitlist, or Reject? (A or W or R): ")
+            #result = 'r'
+
+        count = count + 1
 
         if result.lower() == 'q':
             return(accept)
         if result.lower() == 'b': 
-            # alter stats; not currently functional
+            # alter stats
             if i == 0:
                 count = count - 1
                 continue
@@ -137,6 +151,7 @@ def deliberate(prospect_list, total):
             continue
 
         if result.lower() == 'a':
+            per.deliberate(1)
             accept.append(per)
 
             # update gender
@@ -163,8 +178,10 @@ def deliberate(prospect_list, total):
 
             # modify stats
         elif result.lower() == 'w':
+            per.deliberate(2)
             waitlist.append(per)
         else:
+            per.deliberate(1)
             reject.append(per)
 
         i = i + 1
