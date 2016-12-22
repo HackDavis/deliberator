@@ -77,7 +77,7 @@ def display_total(accept, reject, waitlist, num_female, num_male, num_other_gend
     print('\n')
     print(str(len(accept)) + ' accepted out of ' + str(count) + ' prospects')
 
-def deliberate(prospect_list, total):
+def deliberate(prospect_list, total, start):
     accept = []
     reject = []
     waitlist = []
@@ -91,9 +91,7 @@ def deliberate(prospect_list, total):
     num_senior = 0
     num_davis = 0
 
-    #for per in prospect_list:
-    #for i in range(0, len(prospect_list)):
-    i = 0
+    i = start
     while i < len(prospect_list):
         per = prospect_list[i]
         result = ''
@@ -103,7 +101,7 @@ def deliberate(prospect_list, total):
         else:
             display_person(per)
             display_total(accept, reject, waitlist, num_female, num_male, num_other_gender, num_fresh, num_soph, num_junior, num_senior, num_davis, count, total)
-            result = input("Accept, Waitlist, or Reject? (A or W or R): ")
+            result = input("Accept, Waitlist, or Reject? (a or w or r or b or q): ")
             #result = 'r'
 
         count = count + 1
@@ -188,7 +186,7 @@ def deliberate(prospect_list, total):
 
     return(accept)
 
-def process_data():
+def process_data(start):
     prospect_list = []
     total = 0
 
@@ -204,8 +202,7 @@ def process_data():
             per = process_prospect(person)
             prospect_list.append(per)
 
-    accepted = deliberate(prospect_list, total)
-
+    accepted = deliberate(prospect_list, total, start)
 
     return(accepted)
 
@@ -215,5 +212,10 @@ def finish(result):
             out.write(person.first + ' ' + person.last + '\n')
 
 if __name__ == '__main__':
-    result = process_data()
+    print('usage: python3 deliberator.py [start_index]')
+    start = 0
+    if len(sys.argv) == 2:
+        start = int(sys.argv[1])
+
+    result = process_data(start)
     finish(result)
