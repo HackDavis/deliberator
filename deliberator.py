@@ -184,7 +184,7 @@ def deliberate(prospect_list, total, start):
 
         i = i + 1
 
-    return(accept)
+    return(accept, waitlist)
 
 def process_data(start):
     prospect_list = []
@@ -202,20 +202,25 @@ def process_data(start):
             per = process_prospect(person)
             prospect_list.append(per)
 
-    accepted = deliberate(prospect_list, total, start)
+    accepted, waitlist = deliberate(prospect_list, total, start)
 
-    return(accepted)
+    return(accepted, waitlist)
 
-def finish(result):
+def finish(result, waitlist):
     with open('output.txt', 'w') as out:
         for person in result:
+            out.write(person.first + ' ' + person.last + '\n')
+
+    with open('waitlist.txt', 'w') as out:
+        for person in waitlist:
             out.write(person.first + ' ' + person.last + '\n')
 
 if __name__ == '__main__':
     print('usage: python3 deliberator.py [start_index]')
     start = 0
+
     if len(sys.argv) == 2:
         start = int(sys.argv[1])
 
-    result = process_data(start)
-    finish(result)
+    result, waitlist = process_data(start)
+    finish(result, waitlist)
